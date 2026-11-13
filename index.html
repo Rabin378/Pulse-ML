@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PulseML — Accelerated C++17 Data Science &amp; AI Compute</title>
+  <meta name="description" content="GPU-grade C++17 data science studio. Upload CSV datasets, profile distributions, and render real-time analytics at compiled speed." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --nv-green: #76B900;
+      --nv-green-bright: #8CE000;
+      --nv-black: #000000;
+      --nv-surface: #111111;
+      --nv-card: #161616;
+      --nv-border: #262626;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--nv-black);
+      color: #ffffff;
+      overflow-x: hidden;
+    }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* NVIDIA Architectural Sharp Cards */
+    .nv-card {
+      background-color: var(--nv-card);
+      border: 1px solid var(--nv-border);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .nv-card:hover {
+      border-color: var(--nv-green);
+      box-shadow: 0 12px 35px -10px rgba(118, 185, 0, 0.22);
+      transform: translateY(-2px);
+    }
+
+    .nv-btn-primary {
+      background-color: var(--nv-green);
+      color: #000000;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      transition: background-color 0.2s ease, transform 0.15s ease;
+    }
+    .nv-btn-primary:hover {
+      background-color: var(--nv-green-bright);
+      transform: translateY(-1px);
+    }
+
+    /* Architectural Circuit Grid Background */
+    .nv-grid-bg {
+      background-image:
+        linear-gradient(to right, rgba(118, 185, 0, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(118, 185, 0, 0.06) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    /* Animated Cursor-Following Character */
+    #cursorCompanion {
+      position: fixed;
+      right: 22px;
+      top: 50%;
+      z-index: 45;
+      pointer-events: none;
+      will-change: transform;
+      filter: drop-shadow(0 12px 24px rgba(118, 185, 0, 0.28));
+    }
+    @keyframes hoverJet {
+      0%, 100% { transform: scaleY(1); opacity: 0.9; }
+      50% { transform: scaleY(1.35); opacity: 0.5; }
+    }
+    .jet-flame {
+      transform-origin: center top;
+      animation: hoverJet 0.35s infinite ease-in-out;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 7px; height: 7px; }
+    ::-webkit-scrollbar-track { background: #000000; }
+    ::-webkit-scrollbar-thumb { background: #262626; }
+    ::-webkit-scrollbar-thumb:hover { background: #76B900; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-[#76B900] selection:text-black">
+
+  <!-- Animated Cursor-Following Cyber-Analyst Character -->
+  <div id="cursorCompanion" aria-hidden="true" class="hidden sm:block">
+    <div class="relative flex flex-col items-center">
+      <!-- Speech Bubble -->
+      <div id="botBubble" class="mb-2 px-2.5 py-1 bg-[#161616] border border-[#76B900] text-[10px] font-mono text-[#8CE000] uppercase tracking-wider whitespace-nowrap shadow-lg transition-opacity duration-300">
+        C++17 READY
+      </div>
+
+      <!-- Custom Animated SVG Character -->
+      <svg id="botSvg" width="84" height="118" viewBox="0 0 100 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Hover Thruster Flame -->
+        <polygon class="jet-flame" points="40,114 60,114 50,136" fill="#76B900" />
+        <polygon class="jet-flame" points="44,114 56,114 50,127" fill="#FFFFFF" />
+
+        <!-- Lower Torso / Hover Base -->
+        <rect x="33" y="72" width="34" height="36" rx="6" fill="#1A1A1A" stroke="#76B900" stroke-width="2.5" />
+        <rect x="40" y="80" width="20" height="8" rx="2" fill="#76B900" opacity="0.85" />
+        <line x1="38" y1="96" x2="62" y2="96" stroke="#404040" stroke-width="2" />
+
+        <!-- Left Arm (Waves when hovering buttons) -->
+        <g id="botLeftArm" style="transform-origin: 31px 76px; transition: transform 0.25s ease;">
+          <rect x="16" y="74" width="14" height="26" rx="5" fill="#222222" stroke="#76B900" stroke-width="2" />
+          <circle cx="23" cy="103" r="4.5" fill="#76B900" />
+        </g>
+
+        <!-- Right Arm -->
+        <g id="botRightArm" style="transform-origin: 69px 76px; transition: transform 0.25s ease;">
+          <rect x="70" y="74" width="14" height="26" rx="5" fill="#222222" stroke="#76B900" stroke-width="2" />
+          <circle cx="77" cy="103" r="4.5" fill="#76B900" />
+        </g>
+
+        <!-- Head Group (Tilts & Tracks Cursor) -->
+        <g id="botHead" style="transform-origin: 50px 45px; transition: transform 0.15s ease-out;">
+          <!-- Antenna -->
+          <line x1="50" y1="10" x2="50" y2="22" stroke="#76B900" stroke-width="3" />
+          <circle cx="50" cy="8" r="4.5" fill="#8CE000" />
+
+          <!-- Helmet / Head Shell -->
+          <rect x="24" y="22" width="52" height="44" rx="10" fill="#141414" stroke="#FFFFFF" stroke-width="2.5" />
+          <!-- Side Ear Nodes -->
+          <rect x="18" y="36" width="6" height="16" rx="2" fill="#76B900" />
+          <rect x="76" y="36" width="6" height="16" rx="2" fill="#76B900" />
+
+          <!-- Dark Visor Screen -->
+          <rect x="30" y="31" width="40" height="24" rx="5" fill="#050505" stroke="#76B900" stroke-width="1.8" />
+
+          <!-- Animated Tracking Eyes -->
+          <g id="botEyes">
+            <circle cx="41" cy="43" r="4.5" fill="#8CE000" />
+            <circle cx="59" cy="43" r="4.5" fill="#8CE000" />
+            <circle cx="42" cy="42" r="1.5" fill="#FFFFFF" />
+            <circle cx="60" cy="42" r="1.5" fill="#FFFFFF" />
+          </g>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 left-6 z-50 hidden bg-[#111111] border-l-4 border-[#76B900] text-white px-4 py-3 shadow-2xl flex items-center gap-3 text-xs font-mono">
+    <span class="h-2 w-2 bg-[#76B900] animate-ping"></span>
+    <span id="toastMsg">SYSTEM READY</span>
+  </div>
+
+  <!-- NVIDIA-Style Top Utility & Main Bar -->
+  <header class="sticky top-0 z-40 bg-black/95 backdrop-blur-md border-b border-[#262626]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <!-- Brand -->
+      <div class="flex items-center gap-8">
+        <a href="#" class="flex items-center gap-2.5 group">
+          <div class="w-8 h-8 bg-[#76B900] flex items-center justify-center text-black font-black text-base tracking-tighter">
+            P//
+          </div>
+          <span class="text-xl font-black tracking-tight text-white uppercase">PULSE<span class="text-[#76B900]">ML</span></span>
+        </a>
+
+        <nav class="hidden md:flex items-center gap-7 text-xs font-bold uppercase tracking-wider text-neutral-300">
+          <a href="#hero" class="hover:text-[#76B900] transition">Platforms</a>
+          <a href="#workspace" class="hover:text-[#76B900] transition">Data Studio</a>
+          <a href="#architecture" class="hover:text-[#76B900] transition">C++17 Core</a>
+          <a href="#pricing" class="hover:text-[#76B900] transition">Enterprise</a>
+        </nav>
+      </div>
+
+      <!-- Auth / Account Controls -->
+      <div id="authLoggedOut" class="flex items-center gap-3">
+        <button onclick="openAuthModal('login')" class="text-xs font-bold uppercase tracking-wider text-neutral-300 hover:text-[#76B900] px-3 py-2 transition">
+          Sign In
+        </button>
+        <button onclick="openAuthModal('signup')" class="nv-btn-primary text-xs uppercase px-4 py-2.5">
+          Join Now
+        </button>
+      </div>
+
+      <div id="authLoggedIn" class="hidden flex items-center gap-4">
+        <span class="hidden sm:inline-block text-[11px] font-mono uppercase px-2.5 py-1 bg-[#76B900]/15 text-[#8CE000] border border-[#76B900]/40">
+          ● COMPUTE ACTIVE
+        </span>
+        <div class="flex items-center gap-2">
+          <div id="userAvatar" class="w-8 h-8 bg-[#76B900] text-black font-black flex items-center justify-center text-xs">U</div>
+          <div class="hidden sm:block leading-tight">
+            <div id="userNameDisplay" class="text-xs font-bold text-white">Engineer</div>
+            <div id="userEmailDisplay" class="text-[10px] font-mono text-neutral-400">user@pulseml.io</div>
+          </div>
+        </div>
+        <button onclick="logout()" class="text-[11px] font-mono uppercase text-neutral-400 hover:text-white border border-[#262626] px-2.5 py-1.5 transition">
+          Logout
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- NVIDIA Split Hero Showcase -->
+  <section id="hero" class="relative nv-grid-bg border-b border-[#262626] bg-gradient-to-r from-black via-[#0a0f02] to-black">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20 grid lg:grid-cols-12 gap-10 items-center">
+      <!-- Left Editorial Column -->
+      <div class="lg:col-span-7 space-y-6">
+        <div class="inline-block text-xs font-mono font-bold uppercase tracking-[0.2em] text-[#76B900] border-l-2 border-[#76B900] pl-3">
+          ACCELERATED DATA SCIENCE // C++17 ARCHITECTURE
+        </div>
+
+        <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white leading-[1.05] uppercase">
+          Bare-Metal Speed for <span class="text-[#76B900]">Enterprise Data.</span>
+        </h1>
+
+        <p class="text-neutral-300 text-base sm:text-lg max-w-2xl leading-relaxed">
+          Eliminate Python interpreter bottlenecks. Ingest raw CSV datasets, synthesize business telemetry, and compute statistical distributions in microseconds on native C++ threads.
+        </p>
+
+        <div class="flex flex-wrap items-center gap-4 pt-2">
+          <a href="#workspace" class="nv-btn-primary text-xs sm:text-sm uppercase px-7 py-3.5 inline-block">
+            Launch Data Studio
+          </a>
+          <button onclick="demoLogin()" class="border border-white/30 hover:border-[#76B900] text-white hover:text-[#76B900] text-xs sm:text-sm font-bold uppercase tracking-wider px-6 py-3.5 transition">
+            Instant Demo Access
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Hardware-Style Dropzone Card -->
+      <div class="lg:col-span-5">
+        <div id="dropZone"
+             ondragover="handleDragOver(event)"
+             ondragleave="handleDragLeave(event)"
+             ondrop="handleDrop(event)"
+             onclick="document.getElementById('csvFileInput').click()"
+             class="nv-card p-8 cursor-pointer relative overflow-hidden group">
+          <div class="absolute top-0 left-0 w-full h-1 bg-[#76B900]"></div>
+          <div class="flex items-center justify-between text-xs font-mono text-[#76B900] mb-4">
+            <span>INPUT STREAM // CSV</span>
+            <span>MAX THROUGHPUT</span>
+          </div>
+          <div class="py-6 border border-dashed border-neutral-700 group-hover:border-[#76B900] text-center px-4 transition">
+            <div class="w-12 h-12 mx-auto mb-3 bg-[#76B900]/15 border border-[#76B900] flex items-center justify-center text-[#76B900] font-mono font-bold text-lg">
+              +
+            </div>
+            <h3 class="text-base font-extrabold uppercase tracking-wide text-white">Drop Dataset Here</h3>
+            <p class="text-xs text-neutral-400 mt-1">Click to select a .CSV file for instant C++ profiling</p>
+          </div>
+          <input id="csvFileInput" type="file" accept=".csv" class="hidden" onchange="uploadCSV(event)" />
+        </div>
+      </div>
+    </div>
+
+    <!-- NVIDIA Signature Story Switcher Rail -->
+    <div class="border-t border-[#262626] bg-[#0B0B0B]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 divide-x divide-[#262626]">
+        <button onclick="loadSample()" class="p-4 text-left border-t-2 border-[#76B900] bg-[#141414] transition">
+          <div class="text-[10px] font-mono uppercase text-[#76B900]">01 // Synthesis</div>
+          <div class="text-xs font-bold text-white mt-0.5">1,000-Row Telemetry</div>
+        </button>
+        <a href="#workspace" class="p-4 text-left border-t-2 border-transparent hover:border-[#76B900] transition">
+          <div class="text-[10px] font-mono uppercase text-neutral-400">02 // Profiling</div>
+          <div class="text-xs font-bold text-white mt-0.5">.describe() Statistics</div>
+        </a>
+        <a href="#workspace" class="p-4 text-left border-t-2 border-transparent hover:border-[#76B900] transition">
+          <div class="text-[10px] font-mono uppercase text-neutral-400">03 // Visualization</div>
+          <div class="text-xs font-bold text-white mt-0.5">Histogram &amp; Series</div>
+        </a>
+        <a href="#architecture" class="p-4 text-left border-t-2 border-transparent hover:border-[#76B900] transition">
+          <div class="text-[10px] font-mono uppercase text-neutral-400">04 // Deployment</div>
+          <div class="text-xs font-bold text-white mt-0.5">C++17 Cloud Engine</div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Workspace Container -->
+  <main id="workspace" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+
+    <!-- Control Bar -->
+    <div class="nv-card p-5 flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2.5">
+          <span class="w-2.5 h-2.5 bg-[#76B900]"></span>
+          <h2 id="datasetTitle" class="font-extrabold text-white text-sm sm:text-base font-mono">synthetic_ecommerce_1000.csv</h2>
+        </div>
+        <p id="status" class="text-xs font-mono text-neutral-400 mt-1">Initializing C++17 compute core...</p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <button onclick="loadSample()" class="nv-btn-primary text-xs uppercase px-4 py-2.5">
+          Generate Sample (1,000 Rows)
+        </button>
+        <button onclick="document.getElementById('csvFileInput').click()" class="bg-[#222222] hover:bg-[#2d2d2d] text-white border border-neutral-700 text-xs font-bold uppercase px-4 py-2.5 transition">
+          Upload CSV
+        </button>
+        <button onclick="exportReport()" class="bg-[#222222] hover:bg-[#2d2d2d] text-white border border-neutral-700 text-xs font-bold uppercase px-4 py-2.5 transition">
+          Export JSON
+        </button>
+      </div>
+    </div>
+
+    <!-- 4 Hardware KPI Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="nv-card p-5 border-t-2 border-t-[#76B900]">
+        <div class="text-[11px] font-mono uppercase text-neutral-400">Records Processed</div>
+        <div id="kpiRows" class="text-3xl font-black text-white mt-1 font-mono">0</div>
+        <div class="text-[11px] font-mono text-[#76B900] mt-1">STL CONTIGUOUS MEMORY</div>
+      </div>
+      <div class="nv-card p-5 border-t-2 border-t-[#76B900]">
+        <div class="text-[11px] font-mono uppercase text-neutral-400">Numeric Features</div>
+        <div id="kpiCols" class="text-3xl font-black text-white mt-1 font-mono">0</div>
+        <div class="text-[11px] font-mono text-neutral-400 mt-1">64-BIT FLOAT PRECISION</div>
+      </div>
+      <div class="nv-card p-5 border-t-2 border-t-[#76B900]">
+        <div class="text-[11px] font-mono uppercase text-neutral-400">Round-Trip Latency</div>
+        <div id="kpiLatency" class="text-3xl font-black text-[#8CE000] mt-1 font-mono">0 ms</div>
+        <div class="text-[11px] font-mono text-neutral-400 mt-1">HTTP + C++ REDUCTION</div>
+      </div>
+      <div class="nv-card p-5 border-t-2 border-t-[#76B900]">
+        <div class="text-[11px] font-mono uppercase text-neutral-400">Compute Core</div>
+        <div class="text-3xl font-black text-white mt-1 font-mono">C++17</div>
+        <div class="text-[11px] font-mono text-[#76B900] mt-1">ZERO-GIL NATIVE BINARY</div>
+      </div>
+    </div>
+
+    <!-- Visualization Studio & Diagnostics -->
+    <div class="grid lg:grid-cols-12 gap-6">
+      <section class="lg:col-span-8 nv-card p-6">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-5 pb-4 border-b border-[#262626]">
+          <div>
+            <h3 class="text-base font-extrabold uppercase tracking-wide text-white">Telemetry Visualizer</h3>
+            <p class="text-xs font-mono text-neutral-400">Real-time sample series streamed from C++</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="chartTypeSelect" onchange="renderChart()" class="bg-black border border-neutral-700 text-white px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-[#76B900]">
+              <option value="line">LINE SERIES</option>
+              <option value="bar">BAR SERIES</option>
+              <option value="histogram">HISTOGRAM (10 BINS)</option>
+            </select>
+            <select id="colSelect" onchange="renderChart()" class="bg-black border border-neutral-700 text-[#8CE000] px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-[#76B900]"></select>
+          </div>
+        </div>
+        <div class="relative h-72">
+          <canvas id="mainChart"></canvas>
+        </div>
+      </section>
+
+      <!-- Diagnostics Panel -->
+      <aside class="lg:col-span-4 nv-card p-6 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-4 pb-3 border-b border-[#262626]">
+            <h3 class="text-sm font-extrabold uppercase tracking-wide text-white">Feature Diagnostics</h3>
+            <span id="diagBadge" class="text-[11px] font-mono px-2 py-0.5 bg-[#76B900] text-black font-bold">COL</span>
+          </div>
+          <div class="space-y-3 text-xs font-mono">
+            <div class="p-3.5 bg-black border border-[#262626] flex justify-between">
+              <span class="text-neutral-400">SKEWNESS</span>
+              <span id="diagSkew" class="text-white font-bold">—</span>
+            </div>
+            <div class="p-3.5 bg-black border border-[#262626] flex justify-between">
+              <span class="text-neutral-400">RANGE SPREAD</span>
+              <span id="diagRange" class="text-white font-bold">—</span>
+            </div>
+            <div class="p-3.5 bg-black border border-[#262626] flex justify-between">
+              <span class="text-neutral-400">VOLATILITY (CV)</span>
+              <span id="diagCV" class="text-[#8CE000] font-bold">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-[#262626]">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[11px] font-mono uppercase text-neutral-400">Execution History</span>
+            <button onclick="clearHistory()" class="text-[11px] font-mono text-neutral-500 hover:text-[#76B900]">CLEAR</button>
+          </div>
+          <ul id="historyList" class="space-y-1.5 text-xs font-mono text-neutral-400 max-h-28 overflow-y-auto">
+            <li class="text-neutral-600">No runs recorded yet.</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Tabbed Statistical Summary & Raw Data -->
+    <section class="nv-card overflow-hidden">
+      <div class="flex items-center justify-between px-6 pt-4 border-b border-[#262626] bg-[#0D0D0D]">
+        <div class="flex gap-6">
+          <button id="tabStatsBtn" onclick="switchTab('stats')" class="pb-3.5 text-xs font-extrabold uppercase tracking-wider border-b-2 border-[#76B900] text-white">
+            Statistical Summary (.describe)
+          </button>
+          <button id="tabPreviewBtn" onclick="switchTab('preview')" class="pb-3.5 text-xs font-extrabold uppercase tracking-wider border-b-2 border-transparent text-neutral-400 hover:text-white">
+            Raw Data Preview
+          </button>
+        </div>
+        <span class="hidden sm:inline font-mono text-[11px] text-[#76B900] pb-3.5">C++17 STL VECTOR ENGINE</span>
+      </div>
+
+      <div id="statsTab" class="p-6 overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="text-xs font-mono uppercase text-neutral-400 border-b border-[#262626]">
+            <tr>
+              <th class="py-3 px-2">Feature</th>
+              <th class="py-3 px-2">Count</th>
+              <th class="py-3 px-2">Mean</th>
+              <th class="py-3 px-2">Std Dev</th>
+              <th class="py-3 px-2">Min</th>
+              <th class="py-3 px-2">Median</th>
+              <th class="py-3 px-2">Max</th>
+            </tr>
+          </thead>
+          <tbody id="statsBody" class="divide-y divide-[#262626]"></tbody>
+        </table>
+      </div>
+
+      <div id="previewTab" class="hidden p-6 overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead id="previewHead" class="text-xs font-mono uppercase text-neutral-400 border-b border-[#262626]"></thead>
+          <tbody id="previewBody" class="divide-y divide-[#262626]"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- NVIDIA Editorial Card Grid -->
+    <section id="architecture" class="pt-8">
+      <div class="mb-8">
+        <span class="text-xs font-mono uppercase tracking-widest text-[#76B900]">ARCHITECTURE // BENCHMARKS</span>
+        <h2 class="text-2xl sm:text-3xl font-black uppercase text-white mt-1">Engineered Like Hardware</h2>
+      </div>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="nv-card p-6">
+          <div class="text-xs font-mono text-[#76B900] mb-2">INGESTION // 01</div>
+          <h3 class="text-lg font-extrabold text-white uppercase">Single-Pass CSV Engine</h3>
+          <p class="text-xs text-neutral-400 mt-2 leading-relaxed">Parses raw text buffers directly into typed C++ double vectors without heavy ORM or SQL overhead.</p>
+        </div>
+        <div class="nv-card p-6">
+          <div class="text-xs font-mono text-[#76B900] mb-2">SYNTHESIS // 02</div>
+          <h3 class="text-lg font-extrabold text-white uppercase">Deterministic Generator</h3>
+          <p class="text-xs text-neutral-400 mt-2 leading-relaxed">Built-in Mersenne Twister (`std::mt19937`) models realistic ad spend, conversion funnels, and daily revenue.</p>
+        </div>
+        <div class="nv-card p-6">
+          <div class="text-xs font-mono text-[#76B900] mb-2">SCALE // 03</div>
+          <h3 class="text-lg font-extrabold text-white uppercase">Cloud Run Container Ready</h3>
+          <p class="text-xs text-neutral-400 mt-2 leading-relaxed">Compiles into a tiny standalone Linux binary capable of handling thousands of concurrent requests.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Enterprise Pricing -->
+    <section id="pricing" class="pt-8">
+      <div class="mb-8">
+        <span class="text-xs font-mono uppercase tracking-widest text-[#76B900]">LICENSING // COMPUTE</span>
+        <h2 class="text-2xl sm:text-3xl font-black uppercase text-white mt-1">Workspace Tiers</h2>
+      </div>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="nv-card p-6 flex flex-col justify-between">
+          <div>
+            <h3 class="text-base font-extrabold uppercase text-white">Community Edition</h3>
+            <div class="mt-2 text-3xl font-black font-mono text-white">$0<span class="text-xs text-neutral-400"> / mo</span></div>
+            <ul class="mt-5 space-y-2 text-xs text-neutral-300 font-mono">
+              <li>+ 50,000 Rows / Dataset</li>
+              <li>+ Statistical .describe() Engine</li>
+              <li>+ Synthetic Data Generator</li>
+            </ul>
+          </div>
+          <button onclick="openAuthModal('signup')" class="mt-6 w-full py-2.5 bg-[#222222] hover:bg-[#333333] text-xs font-bold uppercase text-white transition">Deploy Free</button>
+        </div>
+
+        <div class="nv-card p-6 flex flex-col justify-between border-[#76B900]">
+          <div>
+            <div class="flex justify-between items-center">
+              <h3 class="text-base font-extrabold uppercase text-white">Pro Compute</h3>
+              <span class="text-[10px] font-mono font-bold uppercase px-2 py-0.5 bg-[#76B900] text-black">RECOMMENDED</span>
+            </div>
+            <div class="mt-2 text-3xl font-black font-mono text-[#8CE000]">$29<span class="text-xs text-neutral-400"> / mo</span></div>
+            <ul class="mt-5 space-y-2 text-xs text-neutral-300 font-mono">
+              <li>+ Unlimited CSV Row Ingestion</li>
+              <li>+ Eigen Correlation &amp; Regression</li>
+              <li>+ JSON &amp; Telemetry Exports</li>
+            </ul>
+          </div>
+          <button onclick="demoLogin()" class="mt-6 w-full py-2.5 nv-btn-primary text-xs uppercase">Activate Pro Demo</button>
+        </div>
+
+        <div class="nv-card p-6 flex flex-col justify-between">
+          <div>
+            <h3 class="text-base font-extrabold uppercase text-white">Dedicated Node</h3>
+            <div class="mt-2 text-3xl font-black font-mono text-white">$99<span class="text-xs text-neutral-400"> / mo</span></div>
+            <ul class="mt-5 space-y-2 text-xs text-neutral-300 font-mono">
+              <li>+ Dedicated Multi-Core C++ Worker</li>
+              <li>+ LibTorch Neural Inference</li>
+              <li>+ Custom Domain &amp; 99.9% SLA</li>
+            </ul>
+          </div>
+          <button onclick="openAuthModal('signup')" class="mt-6 w-full py-2.5 bg-[#222222] hover:bg-[#333333] text-xs font-bold uppercase text-white transition">Contact Team</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- NVIDIA-Style Dark Corporate Footer -->
+  <footer id="footer" class="bg-black border-t border-[#262626] mt-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 pb-10 border-b border-[#262626]">
+        <div>
+          <h4 class="text-xs font-extrabold uppercase tracking-wider text-white border-b border-[#262626] pb-2 mb-4">Platform</h4>
+          <ul class="space-y-2 text-xs text-neutral-400">
+            <li><a href="#workspace" class="hover:text-[#76B900] transition">C++17 CSV Profiler</a></li>
+            <li><a href="#workspace" class="hover:text-[#76B900] transition">Synthetic Data Engine</a></li>
+            <li><a href="#architecture" class="hover:text-[#76B900] transition">System Architecture</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-xs font-extrabold uppercase tracking-wider text-white border-b border-[#262626] pb-2 mb-4">Developers</h4>
+          <ul class="space-y-2 text-xs text-neutral-400">
+            <li><a href="#workspace" class="hover:text-[#76B900] transition">REST API Endpoints</a></li>
+            <li><a href="#pricing" class="hover:text-[#76B900] transition">Cloud Run Docker</a></li>
+            <li><a href="#workspace" class="hover:text-[#76B900] transition">Performance Benchmarks</a></li>
+          </ul>
+        </div>
+        <div class="md:col-span-2">
+          <h4 class="text-xs font-extrabold uppercase tracking-wider text-white border-b border-[#262626] pb-2 mb-4">Sign Up for PulseML Compute News</h4>
+          <form onsubmit="subscribeNewsletter(event)" class="flex gap-2 max-w-md">
+            <input type="email" required placeholder="engineer@company.com" class="w-full bg-[#111111] border border-[#262626] px-3 py-2.5 text-xs text-white focus:outline-none focus:border-[#76B900]" />
+            <button type="submit" class="nv-btn-primary text-xs uppercase px-5 py-2.5">Subscribe</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-500">
+        <div class="flex items-center gap-3">
+          <span class="px-2 py-0.5 bg-[#76B900] text-black font-black text-xs">P//</span>
+          <span class="font-bold text-white uppercase">PULSEML COMPUTE</span>
+        </div>
+        <p>© 2026 PulseML Inc. Engineered in ISO C++17.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Login / Account Modal -->
+  <div id="authModal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#111111] border border-[#76B900] max-w-md w-full p-6 shadow-2xl relative">
+      <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-neutral-400 hover:text-white font-mono">✕</button>
+      <h3 id="authModalTitle" class="text-lg font-black uppercase text-white mb-4">Sign In to PulseML</h3>
+
+      <div class="grid grid-cols-2 bg-black p-1 border border-[#262626] mb-5 text-xs font-bold uppercase">
+        <button id="tabLoginBtn" onclick="setAuthMode('login')" class="py-1.5 bg-[#76B900] text-black">Sign In</button>
+        <button id="tabSignupBtn" onclick="setAuthMode('signup')" class="py-1.5 text-neutral-400 hover:text-white">Register</button>
+      </div>
+
+      <form onsubmit="handleAuthSubmit(event)" class="space-y-4">
+        <div id="nameFieldGroup" class="hidden">
+          <label class="block text-[11px] font-mono uppercase text-neutral-400 mb-1">Full Name</label>
+          <input id="authName" type="text" placeholder="Alex Mercer" class="w-full bg-black border border-[#262626] px-3 py-2 text-sm text-white focus:outline-none focus:border-[#76B900]" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-mono uppercase text-neutral-400 mb-1">Email</label>
+          <input id="authEmail" type="email" required placeholder="alex@company.com" class="w-full bg-black border border-[#262626] px-3 py-2 text-sm text-white focus:outline-none focus:border-[#76B900]" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-mono uppercase text-neutral-400 mb-1">Password</label>
+          <input id="authPassword" type="password" required placeholder="••••••••" class="w-full bg-black border border-[#262626] px-3 py-2 text-sm text-white focus:outline-none focus:border-[#76B900]" />
+        </div>
+        <button type="submit" id="authSubmitBtn" class="w-full nv-btn-primary py-2.5 text-xs uppercase">
+          Access Workspace
+        </button>
+      </form>
+
+      <div class="mt-4 pt-4 border-t border-[#262626]">
+        <button onclick="demoLogin()" class="w-full bg-[#1A1A1A] hover:bg-[#242424] text-white text-xs font-bold uppercase py-2.5 border border-[#333333] transition">
+          Instant One-Click Demo Login
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentData = null;
+    let chartInstance = null;
+
+    // =========================================================================
+    // 1. ANIMATED CURSOR-FOLLOWING CHARACTER ENGINE (UP & DOWN + EYE TRACKING)
+    // =========================================================================
+    const companion = document.getElementById('cursorCompanion');
+    const botHead = document.getElementById('botHead');
+    const botEyes = document.getElementById('botEyes');
+    const botLeftArm = document.getElementById('botLeftArm');
+    const botBubble = document.getElementById('botBubble');
+
+    let targetY = window.innerHeight * 0.45;
+    let currentY = targetY;
+    let mouseX = window.innerWidth * 0.5;
+    let mouseY = targetY;
+
+    window.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      // Clamp vertical movement so the character stays cleanly inside the screen
+      targetY = Math.max(90, Math.min(window.innerHeight - 160, e.clientY - 55));
+
+      // Wave arm & update status when hovering interactive buttons/cards
+      const interactive = e.target.closest('button, a, #dropZone');
+      if (interactive) {
+        botLeftArm.style.transform = 'rotate(38deg)';
+        botBubble.innerText = 'EXECUTE >>';
+      } else {
+        botLeftArm.style.transform = 'rotate(0deg)';
+        botBubble.innerText = 'C++17 READY';
+      }
+    });
+
+    function animateCompanion() {
+      // Smooth spring-like vertical interpolation following cursor up & down
+      currentY += (targetY - currentY) * 0.1;
+      const bobbing = Math.sin(performance.now() / 420) * 4;
+      companion.style.top = '0px';
+      companion.style.transform = `translate3d(0, ${currentY + bobbing}px, 0)`;
+
+      // Calculate angle from bot head to cursor for eye & head tracking
+      const rect = companion.getBoundingClientRect();
+      const headCenterX = rect.left + rect.width / 2;
+      const headCenterY = rect.top + 60;
+      const dx = mouseX - headCenterX;
+      const dy = mouseY - headCenterY;
+
+      const eyeOffsetX = Math.max(-4, Math.min(4, dx / 90));
+      const eyeOffsetY = Math.max(-3, Math.min(3, dy / 90));
+      const headTilt = Math.max(-10, Math.min(10, dy / 45));
+
+      botEyes.setAttribute('transform', `translate(${eyeOffsetX}, ${eyeOffsetY})`);
+      botHead.style.transform = `rotate(${headTilt}deg)`;
+
+      requestAnimationFrame(animateCompanion);
+    }
+    animateCompanion();
+
+    // =========================================================================
+    // 2. TOAST, AUTH & WORKSPACE LOGIC
+    // =========================================================================
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      document.getElementById('toastMsg').innerText = msg.toUpperCase();
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 3000);
+    }
+
+    function initAuth() {
+      const saved = localStorage.getItem('pulseml_user');
+      if (saved) applyLoggedInUI(JSON.parse(saved));
+      renderHistory();
+    }
+
+    function openAuthModal(mode = 'login') {
+      setAuthMode(mode);
+      document.getElementById('authModal').classList.remove('hidden');
+    }
+    function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
+
+    function setAuthMode(mode) {
+      const isSignup = mode === 'signup';
+      document.getElementById('authModalTitle').innerText = isSignup ? 'Register PulseML Account' : 'Sign In to PulseML';
+      document.getElementById('authSubmitBtn').innerText = isSignup ? 'Create Node' : 'Access Workspace';
+      document.getElementById('nameFieldGroup').classList.toggle('hidden', !isSignup);
+      document.getElementById('tabLoginBtn').className = isSignup ? 'py-1.5 text-neutral-400' : 'py-1.5 bg-[#76B900] text-black';
+      document.getElementById('tabSignupBtn').className = isSignup ? 'py-1.5 bg-[#76B900] text-black' : 'py-1.5 text-neutral-400';
+    }
+
+    function handleAuthSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById('authEmail').value.trim();
+      const name = document.getElementById('authName').value.trim() || email.split('@')[0];
+      const user = { name, email };
+      localStorage.setItem('pulseml_user', JSON.stringify(user));
+      applyLoggedInUI(user);
+      closeAuthModal();
+      showToast(`Authenticated: ${name}`);
+    }
+
+    function demoLogin() {
+      const user = { name: 'Systems Architect', email: 'demo@pulseml.io' };
+      localStorage.setItem('pulseml_user', JSON.stringify(user));
+      applyLoggedInUI(user);
+      closeAuthModal();
+      showToast('Demo Pro Compute Activated');
+    }
+
+    function logout() {
+      localStorage.removeItem('pulseml_user');
+      document.getElementById('authLoggedIn').classList.add('hidden');
+      document.getElementById('authLoggedOut').classList.remove('hidden');
+      showToast('Session Terminated');
+    }
+
+    function applyLoggedInUI(user) {
+      document.getElementById('authLoggedOut').classList.add('hidden');
+      document.getElementById('authLoggedIn').classList.remove('hidden');
+      document.getElementById('userNameDisplay').innerText = user.name;
+      document.getElementById('userEmailDisplay').innerText = user.email;
+      document.getElementById('userAvatar').innerText = user.name.charAt(0).toUpperCase();
+    }
+
+    function recordHistory(filename, rows, ms) {
+      const history = JSON.parse(localStorage.getItem('pulseml_history') || '[]');
+      history.unshift({ filename, rows, ms });
+      localStorage.setItem('pulseml_history', JSON.stringify(history.slice(0, 6)));
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const list = document.getElementById('historyList');
+      const history = JSON.parse(localStorage.getItem('pulseml_history') || '[]');
+      if (!history.length) {
+        list.innerHTML = '<li class="text-neutral-600">No runs recorded yet.</li>';
+        return;
+      }
+      list.innerHTML = history.map(h => `
+        <li class="flex items-center justify-between bg-black px-2.5 py-1.5 border border-[#262626]">
+          <span class="truncate max-w-[140px] text-neutral-300">${h.filename}</span>
+          <span class="text-[#76B900]">${h.rows}r • ${h.ms}ms</span>
+        </li>
+      `).join('');
+    }
+    function clearHistory() { localStorage.removeItem('pulseml_history'); renderHistory(); }
+
+    function handleDragOver(e) { e.preventDefault(); document.getElementById('dropZone').style.borderColor = '#76B900'; }
+    function handleDragLeave(e) { e.preventDefault(); document.getElementById('dropZone').style.borderColor = '#262626'; }
+    function handleDrop(e) {
+      e.preventDefault();
+      handleDragLeave(e);
+      if (e.dataTransfer.files[0]) processCSVFile(e.dataTransfer.files[0]);
+    }
+
+    async function loadSample() {
+      const t0 = performance.now();
+      const res = await fetch('/api/sample');
+      currentData = await res.json();
+      const ms = (performance.now() - t0).toFixed(1);
+      document.getElementById('datasetTitle').innerText = 'synthetic_ecommerce_1000.csv';
+      document.getElementById('status').innerText = `PROFILED ${currentData.total_rows.toLocaleString()} ROWS IN ${ms} MS`;
+      document.getElementById('kpiLatency').innerText = `${ms} ms`;
+      recordHistory('synthetic_1000.csv', currentData.total_rows, ms);
+      updateUI();
+    }
+
+    function uploadCSV(e) { if (e.target.files[0]) processCSVFile(e.target.files[0]); }
+
+    async function processCSVFile(file) {
+      const text = await file.text();
+      const t0 = performance.now();
+      const res = await fetch('/api/analyze', { method: 'POST', body: text });
+      currentData = await res.json();
+      const ms = (performance.now() - t0).toFixed(1);
+      document.getElementById('datasetTitle').innerText = file.name;
+      document.getElementById('status').innerText = `PROFILED "${file.name}" (${currentData.total_rows.toLocaleString()} ROWS) IN ${ms} MS`;
+      document.getElementById('kpiLatency').innerText = `${ms} ms`;
+      recordHistory(file.name, currentData.total_rows, ms);
+      updateUI();
+      showToast(`Analyzed ${file.name}`);
+    }
+
+    function updateUI() {
+      if (!currentData) return;
+      document.getElementById('kpiRows').innerText = currentData.total_rows.toLocaleString();
+      document.getElementById('kpiCols').innerText = currentData.stats.length;
+
+      const tbody = document.getElementById('statsBody');
+      const select = document.getElementById('colSelect');
+      tbody.innerHTML = '';
+      select.innerHTML = '';
+
+      currentData.stats.forEach((col, idx) => {
+        tbody.innerHTML += `
+          <tr class="hover:bg-[#1E1E1E] transition">
+            <td class="py-3 px-2 font-bold text-[#8CE000] font-mono">${col.name}</td>
+            <td class="py-3 px-2 font-mono text-neutral-300">${col.count.toLocaleString()}</td>
+            <td class="py-3 px-2 font-mono text-white">${col.mean.toFixed(2)}</td>
+            <td class="py-3 px-2 font-mono text-neutral-400">${col.std.toFixed(2)}</td>
+            <td class="py-3 px-2 font-mono text-neutral-400">${col.min.toFixed(2)}</td>
+            <td class="py-3 px-2 font-mono text-[#76B900]">${col.median.toFixed(2)}</td>
+            <td class="py-3 px-2 font-mono text-white">${col.max.toFixed(2)}</td>
+          </tr>`;
+        select.innerHTML += `<option value="${idx}">${col.name.toUpperCase()}</option>`;
+      });
+
+      const pHead = document.getElementById('previewHead');
+      const pBody = document.getElementById('previewBody');
+      pHead.innerHTML = `<tr>${(currentData.headers || []).map(h => `<th class="py-3 px-2">${h}</th>`).join('')}</tr>`;
+      pBody.innerHTML = (currentData.preview || []).map(r => `
+        <tr class="hover:bg-[#1E1E1E] transition">
+          ${r.map(c => `<td class="py-2.5 px-2 font-mono text-xs text-neutral-300">${c}</td>`).join('')}
+        </tr>`).join('');
+
+      renderChart();
+    }
+
+    function switchTab(tab) {
+      const isStats = tab === 'stats';
+      document.getElementById('statsTab').classList.toggle('hidden', !isStats);
+      document.getElementById('previewTab').classList.toggle('hidden', isStats);
+      document.getElementById('tabStatsBtn').className = isStats ? 'pb-3.5 text-xs font-extrabold uppercase tracking-wider border-b-2 border-[#76B900] text-white' : 'pb-3.5 text-xs font-extrabold uppercase tracking-wider border-b-2 border-transparent text-neutral-400';
+      document.getElementById('tabPreviewBtn').className = !isStats ? 'pb-3.5 text-xs font-extrabold uppercase tracking-wider border-b-2 border-[#76B900] text-white' : 'pb-3.5 text-xs font-extrabold uppercase tracking-wider border-b-2 border-transparent text-neutral-400';
+    }
+
+    function renderChart() {
+      if (!currentData || !currentData.stats.length) return;
+      const idx = document.getElementById('colSelect').value;
+      const chartType = document.getElementById('chartTypeSelect').value;
+      const col = currentData.stats[idx];
+
+      document.getElementById('diagBadge').innerText = col.name.toUpperCase();
+      const diff = col.mean - col.median;
+      document.getElementById('diagSkew').innerText = Math.abs(diff) < (col.std * 0.1) ? 'SYMMETRIC' : (diff > 0 ? 'RIGHT-SKEWED' : 'LEFT-SKEWED');
+      document.getElementById('diagRange').innerText = `${col.min.toFixed(1)} → ${col.max.toFixed(1)}`;
+      document.getElementById('diagCV').innerText = col.mean !== 0 ? ((col.std / Math.abs(col.mean)) * 100).toFixed(1) + '%' : '0%';
+
+      let labels = [], values = [], renderType = chartType;
+      if (chartType === 'histogram') {
+        renderType = 'bar';
+        const bins = 10, min = Math.min(...col.sample), max = Math.max(...col.sample);
+        const step = (max - min) / bins || 1;
+        const counts = new Array(bins).fill(0);
+        col.sample.forEach(v => {
+          let b = Math.floor((v - min) / step);
+          if (b >= bins) b = bins - 1;
+          counts[b]++;
+        });
+        labels = counts.map((_, i) => `${(min + i * step).toFixed(0)}–${(min + (i + 1) * step).toFixed(0)}`);
+        values = counts;
+      } else {
+        labels = col.sample.map((_, i) => `#${i + 1}`);
+        values = col.sample;
+      }
+
+      const ctx = document.getElementById('mainChart').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(ctx, {
+        type: renderType,
+        data: {
+          labels,
+          datasets: [{
+            label: chartType === 'histogram' ? `${col.name.toUpperCase()} (FREQUENCY)` : col.name.toUpperCase(),
+            data: values,
+            borderColor: '#76B900',
+            backgroundColor: renderType === 'bar' ? 'rgba(118, 185, 0, 0.7)' : 'rgba(118, 185, 0, 0.15)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.25,
+            pointRadius: renderType === 'line' ? 2 : 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#ffffff', font: { family: 'JetBrains Mono', size: 11 } } } },
+          scales: {
+            x: { ticks: { color: '#737373', maxTicksLimit: 10 }, grid: { color: '#1F1F1F' } },
+            y: { ticks: { color: '#737373' }, grid: { color: '#1F1F1F' } }
+          }
+        }
+      });
+    }
+
+    function exportReport() {
+      if (!currentData) return;
+      const blob = new Blob([JSON.stringify(currentData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'pulseml_telemetry_report.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Exported JSON Report');
+    }
+
+    function subscribeNewsletter(e) { e.preventDefault(); e.target.reset(); showToast('Subscribed to Compute News'); }
+
+    initAuth();
+    loadSample();
+  </script>
+</body>
+</html>
